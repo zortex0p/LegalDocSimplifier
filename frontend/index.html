@@ -506,25 +506,7 @@
   .action-btn.primary { background: var(--red); color: white; border-color: var(--red); }
   .action-btn.primary:hover { background: var(--red-dark); border-color: var(--red-dark); color: white; }
 
-  /* TECH STACK SECTION */
-  .tech-section {
-    padding: 80px 2rem;
-    background: var(--gray-100);
-  }
-  .tech-inner { max-width: 1100px; margin: 0 auto; }
-  .tech-grid {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 16px; margin-top: 2.5rem;
-  }
-  .tech-card {
-    background: white; border-radius: var(--radius); padding: 1.5rem 1rem;
-    text-align: center; border: 1px solid var(--gray-200);
-    transition: all 0.2s;
-  }
-  .tech-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
-  .tech-card .t-icon { font-size: 32px; margin-bottom: 10px; display: block; }
-  .tech-card h4 { font-size: 14px; font-weight: 600; margin-bottom: 4px; color: var(--gray-900); }
-  .tech-card p { font-size: 12px; color: var(--gray-400); line-height: 1.5; }
+
 
   /* CTA */
   .cta-section {
@@ -936,47 +918,7 @@
   </div>
 </section>
 
-<!-- TECH STACK -->
-<section class="tech-section" id="tech">
-  <div class="tech-inner">
-    <div class="section-label">Under the hood</div>
-    <h2 class="section-title">Tech stack</h2>
-    <p class="section-sub" style="color: var(--gray-600);">Built with production-ready tools used by real legal-AI startups.</p>
 
-    <div class="tech-grid">
-      <div class="tech-card">
-        <span class="t-icon">⚛️</span>
-        <h4>React</h4>
-        <p>Frontend framework for a fast, responsive UI</p>
-      </div>
-      <div class="tech-card">
-        <span class="t-icon">🐍</span>
-        <h4>Flask</h4>
-        <p>Lightweight Python backend API server</p>
-      </div>
-      <div class="tech-card">
-        <span class="t-icon">🤗</span>
-        <h4>LEGAL-BERT</h4>
-        <p>Domain-specific BERT model fine-tuned on legal text</p>
-      </div>
-      <div class="tech-card">
-        <span class="t-icon">📄</span>
-        <h4>pdfplumber</h4>
-        <p>Accurate PDF text and table extraction</p>
-      </div>
-      <div class="tech-card">
-        <span class="t-icon">🐘</span>
-        <h4>PostgreSQL</h4>
-        <p>Persistent storage for document history and analytics</p>
-      </div>
-      <div class="tech-card">
-        <span class="t-icon">🧠</span>
-        <h4>Claude API</h4>
-        <p>Large language model for plain-English generation</p>
-      </div>
-    </div>
-  </div>
-</section>
 
 <!-- CTA -->
 <section class="cta-section">
@@ -992,7 +934,6 @@
   <div class="footer-links">
     <a href="#features">Features</a>
     <a href="#analyzer">Analyzer</a>
-    <a href="#tech">Tech stack</a>
   </div>
 </footer>
 
@@ -1459,7 +1400,6 @@ function translateTo(targetLang) {
   
   // Use local translation as fallback if API not available
   promise.catch(() => {
-    console.log('Using local translation fallback');
     translateResultsLocally(results, targetLang);
   }).then(res => {
     if (res && res.ok) {
