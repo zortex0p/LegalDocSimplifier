@@ -926,11 +926,10 @@ async function analyzeDocument() {
     return;
   }
   
-  // Get API URL from environment or use default
-  const apiUrl = window.location.hostname === 'localhost' 
+  // API URL - Update with your Render backend URL for production
+  const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? 'http://localhost:5000/api/simplify'
-    : `${window.location.protocol}//${window.location.hostname.replace('front-', 'back-')}/api/simplify`
-      .replace('lexplain', 'lexplain-api'); // Adjust domain as needed
+    : 'https://lexplain-api.onrender.com/api/simplify'; // UPDATE THIS with your Render URL
   
   document.getElementById('input-area').style.display = 'none';
   document.getElementById('loading-state').style.display = 'block';
