@@ -925,6 +925,13 @@ async function analyzeDocument() {
     alert('Please paste some contract text or load a sample to analyze.');
     return;
   }
+  
+  // Get API URL from environment or use default
+  const apiUrl = window.location.hostname === 'localhost' 
+    ? 'http://localhost:5000/api/simplify'
+    : `${window.location.protocol}//${window.location.hostname.replace('front-', 'back-')}/api/simplify`
+      .replace('lexplain', 'lexplain-api'); // Adjust domain as needed
+  
   document.getElementById('input-area').style.display = 'none';
   document.getElementById('loading-state').style.display = 'block';
   document.getElementById('results-area').style.display = 'none';
@@ -941,7 +948,7 @@ async function analyzeDocument() {
   }, 1200);
 
   try {
-    const res = await fetch('http://localhost:5000/api/simplify', {
+    const res = await fetch(apiUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text: text })

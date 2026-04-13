@@ -1,0 +1,16 @@
+{
+  "buildCommand": "echo 'Frontend ready'",
+  "outputDirectory": ".",
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/frontend/index.html"
+    }
+  ],
+  "env": {
+    "REACT_APP_API_URL": {
+      "description": "Backend API URL",
+      "example": "https://your-api.onrender.com"
+    }
+  }
+}

@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: lexplain-api
+    runtime: python
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: gunicorn --chdir backend app:app
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: DATABASE_URL
+        value: sqlite:///legal_documents.db
+      - key: ANTHROPIC_API_KEY
+        scope: secret
