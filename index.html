@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legal Document Simplifier</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 200px;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .result-section {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid #eee;
+            display: none;
+        }
+
+        .result-section.show {
+            display: block;
+        }
+
+        .result-text {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #667eea;
+        }
+
+        .loading.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Legal Document Simplifier</h1>
+        <p class="subtitle">Transform complex legal documents into plain, understandable language</p>
+
+        <form id="simplifierForm">
+            <div class="form-group">
+                <label for="legalText">Paste your legal document here:</label>
+                <textarea id="legalText" placeholder="Paste the legal text you want to simplify..." required></textarea>
+            </div>
+
+            <button type="submit">Simplify Document</button>
+        </form>
+
+        <div class="loading" id="loading">
+            <p>Processing your document...</p>
+        </div>
+
+        <div class="error" id="errorMessage"></div>
+
+        <div class="result-section" id="resultSection">
+            <h2>Simplified Version</h2>
+            <div class="result-text" id="resultText"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('simplifierForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const legalText = document.getElementById('legalText').value.trim();
+            if (!legalText) {
+                showError('Please paste some legal text to simplify.');
+                return;
+            }
+
+            showLoading(true);
+            hideError();
+            hideResult();
+
+            try {
+                const response = await fetch('/api/simplify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: legalText })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                showResult(data.simplified_text);
+            } catch (error) {
+                showError('Error processing document: ' + error.message);
+                console.error('Error:', error);
+            } finally {
+                showLoading(false);
+            }
+        });
+
+        function showLoading(show) {
+            document.getElementById('loading').classList.toggle('show', show);
+        }
+
+        function showError(message) {
+            const errorEl = document.getElementById('errorMessage');
+            errorEl.textContent = message;
+            errorEl.classList.add('show');
+        }
+
+        function hideError() {
+            document.getElementById('errorMessage').classList.remove('show');
+        }
+
+        function showResult(text) {
+            document.getElementById('resultText').textContent = text;
+            document.getElementById('resultSection').classList.add('show');
+        }
+
+        function hideResult() {
+            document.getElementById('resultSection').classList.remove('show');
+        }
+    </script>
+</body>
+</html>
