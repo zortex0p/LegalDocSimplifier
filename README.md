@@ -2,7 +2,6 @@
 
 A legal document analysis tool that helps non-lawyers understand contracts, terms of service, and legal agreements by breaking them down into plain English.
 
-![Top Pick](https://img.shields.io/badge/Top%20Pick-College%20Mini%20Project-brightgreen)
 ![Python](https://img.shields.io/badge/Python-3.9%2B-blue)
 ![Flask](https://img.shields.io/badge/Flask-3.0-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
@@ -293,7 +292,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 👨‍💻 Author
 
-Created as a college mini-project demonstrating LLM integration, NLP techniques, and full-stack development.
+A full-stack project demonstrating LLM integration, NLP techniques, and modern web development.
 
 ## 📞 Support
 
