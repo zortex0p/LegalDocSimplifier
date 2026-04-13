@@ -340,23 +340,29 @@ def enrich_clauses_with_ai(clauses, full_text):
     for clause_type, clause in clause_types.items():
         try:
             # Generate explanation and risk score using Claude
-            prompt = f"""You are a legal expert. Analyze this legal clause and provide:
-1. A plain English explanation (1-2 sentences)
-2. Risk level (high/medium/low)
-3. A negotiation tip if applicable
+            prompt = f"""You are a legal expert helping someone understand what they're signing. 
+READ THE ENTIRE CLAUSE AND CONTEXT CAREFULLY before answering.
+
+Analyze this clause and provide:
+
+1. SIMPLE EXPLANATION: Explain in everyday language (like talking to a friend) what this clause means and what it does. Use short sentences. Avoid legal jargon.
+2. ACTUAL RISKS: Identify REAL risks this creates for the person signing. Be specific about what could go wrong or what they're agreeing to. Rate as high/medium/low based on actual impact to them.
+3. PRACTICAL TIP: Give 1 specific action they can take (negotiate, clarify, or accept).
 
 Clause type: {clause_type}
 Clause text: {clause['text']}
 
-Full document context (first 1000 chars):
-{full_text[:1000]}
+Full document context:
+{full_text[:1500]}
+
+Think carefully about the full context before answering.
 
 Respond in this exact JSON format:
 {{
   "title": "{clause_type}",
-  "plain": "Plain English explanation here",
+  "plain": "Simple explanation in everyday words",
   "risk": "high|medium|low",
-  "tip": "Negotiation tip or suggestion",
+  "tip": "One specific action to take",
   "original": "{clause['text'][:100]}"
 }}"""
 
@@ -380,24 +386,33 @@ Respond in this exact JSON format:
                 clause_data = json.loads(json_match.group())
                 enriched_clauses.append(clause_data)
             else:
-                # Create default enriched clause if parsing fails
+                # Create helpful enriched clause if JSON parsing fails
                 enriched_clauses.append({
                     'title': clause_type,
                     'risk': 'medium',
                     'original': clause['text'][:100],
-                    'plain': response_text[:200],
-                    'tip': 'Review this clause carefully with a legal professional.'
+                    'plain': response_text[:200] if response_text else f'This {clause_type.lower()} clause requires careful attention.',
+                    'tip': 'Get legal advice before agreeing to this clause.'
                 })
         
         except Exception as e:
             logger.warning(f"Error enriching clause {clause_type}: {e}")
-            # Add basic enrichment as fallback
+            # Add thoughtful enrichment as fallback
+            risk_level = 'medium'
+            # Determine risk based on clause type
+            high_risk_types = ['LIABILITY', 'TERMINATION', 'NON-COMPETE', 'AUTO-RENEWAL', 'ARBITRATION']
+            low_risk_types = ['DATA/PRIVACY']
+            if clause_type in high_risk_types:
+                risk_level = 'high'
+            elif clause_type in low_risk_types:
+                risk_level = 'low'
+            
             enriched_clauses.append({
                 'title': clause_type,
-                'risk': 'medium',
+                'risk': risk_level,
                 'original': clause['text'][:100],
-                'plain': f'This clause relates to {clause_type.lower()}. Ensure you understand all implications.',
-                'tip': 'Consider consulting a lawyer about this clause.'
+                'plain': f'This {clause_type.lower()} clause affects your rights and obligations. Read it carefully and consider getting legal advice if uncertain.',
+                'tip': f'Ask for clarification on this {clause_type.lower()} clause or consider negotiating the terms.'
             })
     
     return enriched_clauses
@@ -467,21 +482,28 @@ def generate_summary_and_tips(text, clauses):
         high_risk_count = sum(1 for c in clauses if c.get('risk') == 'high')
         medium_risk_count = sum(1 for c in clauses if c.get('risk') == 'medium')
         
-        prompt = f"""You are a legal expert. Based on the following document analysis, provide:
-1. A 2-3 sentence overall summary
-2. 3 specific negotiation tips
+        prompt = f"""You are a legal expert helping someone understand what they're about to sign.
 
-Document excerpt: {text[:500]}
+READ THE ENTIRE DOCUMENT CAREFULLY before answering.
 
-Risk analysis summary:
-- High risk clauses: {high_risk_count}
-- Medium risk clauses: {medium_risk_count}
+Based on a thorough analysis of this document, provide:
+1. OVERALL SUMMARY: In simple terms, what is this document asking them to do? What are the main concerns and red flags?
+2. SPECIFIC ACTIONS: Give 3 specific, practical steps they should take before signing (negotiate specific clauses, get clarification on something, understand what they're agreeing to, etc.)
+
+Document:
+{text[:1500]}
+
+Risk summary:
+- High risk clauses found: {high_risk_count}
+- Medium risk clauses found: {medium_risk_count}
 - Total clauses analyzed: {len(clauses)}
+
+Be specific, practical, and direct. Focus on what actually matters to the person signing. Use simple language.
 
 Respond in this exact JSON format:
 {{
-  "summary": "2-3 sentence summary here",
-  "tips": ["tip 1", "tip 2", "tip 3"]
+  "summary": "Simple, clear summary of what this document means and main risks",
+  "tips": ["Specific action 1", "Specific action 2", "Specific action 3"]
 }}"""
 
         response = anthropic_client.messages.create(
@@ -503,11 +525,19 @@ Respond in this exact JSON format:
             data = json.loads(json_match.group())
             return data.get('summary', ''), data.get('tips', [])
         else:
-            return response_text[:300], ['Review all clauses carefully', 'Seek legal advice for complex terms', 'Negotiate unfavorable conditions']
+            return response_text[:300], [
+                'Request clarification on any confusing terms before signing',
+                'Ask about the process for terminating or modifying the agreement',
+                'Get a lawyer to review sections that seem risky or unfavorable'
+            ]
     
     except Exception as e:
         logger.warning(f"Error generating summary: {e}")
-        return "Document analysis complete. Review each clause carefully.", ["Consult a lawyer", "Identify key concerns", "Prepare negotiation points"]
+        return "Document analysis complete. Read this carefully before signing. Review all key terms and any restrictions.", [
+            "Clarify any terms you don't understand",
+            "Get legal review before signing",
+            "Consider negotiating unfavorable terms"
+        ]
 
 
 def save_analysis(text, analysis):
