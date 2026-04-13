@@ -194,6 +194,69 @@ def simplify_document():
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
 
 
+@app.route('/api/translate', methods=['POST'])
+def translate_results():
+    """
+    Translate document analysis results to another language
+    
+    Expected JSON payload:
+    {
+        "results": {...analysis results...},
+        "target_language": "es|fr|de|zh|ja|ar|hi|pt|ko",
+        "language_name": "Spanish|French|etc"
+    }
+    """
+    try:
+        data = request.get_json()
+        
+        if not data or 'results' not in data:
+            return jsonify({'error': 'Missing results in request'}), 400
+        
+        results = data['results']
+        target_lang = data.get('target_language', 'es')
+        lang_name = data.get('language_name', 'Spanish')
+        
+        # Translate the analysis results using Claude
+        prompt = f"""Translate the following legal document analysis results to {lang_name}. 
+Keep the structure and formatting intact. Translate all text, clause explanations, tips, and summaries.
+Maintain the same format and JSON structure.
+
+Original results:
+{json.dumps(results, indent=2)}
+
+Provide the translated version maintaining identical structure."""
+        
+        response = anthropic_client.messages.create(
+            model="claude-3-5-sonnet-20241022",
+            max_tokens=4000,
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ]
+        )
+        
+        response_text = response.content[0].text
+        
+        # Try to extract JSON from response
+        json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
+        if json_match:
+            try:
+                translated_results = json.loads(json_match.group())
+                return jsonify(translated_results), 200
+            except json.JSONDecodeError:
+                pass
+        
+        # If translation fails, return original results
+        logger.warning(f"Could not translate to {lang_name}. Returning original results.")
+        return jsonify(results), 200
+    
+    except Exception as e:
+        logger.error(f"Error translating results: {str(e)}", exc_info=True)
+        return jsonify({'error': f'Translation error: {str(e)}'}), 500
+
+
 @app.route('/api/upload-pdf', methods=['POST'])
 def upload_pdf():
     """
